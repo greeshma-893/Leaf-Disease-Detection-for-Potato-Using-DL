@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Potato Disease Detection</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'detection/styles.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            background: url('/static/bg.jpg') no-repeat center center/cover;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .upload-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+        }
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin: 0;
+            font-size: 28px;
+        }
+        .logout-button {
+            background: #dc3545;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .logout-button:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .upload-section {
+            margin-bottom: 20px;
+        }
+        .drop-zone {
+            border: 2px dashed #4CAF50;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            background: rgba(76, 175, 80, 0.05);
+            transition: all 0.3s ease;
+        }
+        .drop-zone.dragover {
+            background: rgba(76, 175, 80, 0.1);
+            border-color: #45a049;
+        }
+        .upload-label {
+            color: #4CAF50;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .upload-button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+        .file-preview {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .predict-button {
+            background: #4CAF50;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 25px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .predict-button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .predict-button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .messages {
+            margin-top: 20px;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .alert.error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        .alert.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+    </style>
+</head>
+<body>
+    <div class="upload-container">
+        <div class="header-container">
+            <h1>Potato Leaf Disease Detection</h1>
+            <a href="{% url 'logout' %}" class="logout-button">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" action="{% url 'upload_image' %}">
+            {% csrf_token %}
+            
+            <div class="upload-section">
+                <div class="drop-zone" id="drop-zone">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>Drag & drop an image here or</span>
+                    <label for="file-input" class="upload-label">
+                        <span class="upload-button">Browse Files</span>
+                    </label>
+                    <input type="file" id="file-input" name="image" accept="image/*" required class="file-input">
+                </div>
+                <div class="file-preview" id="file-preview"></div>
+            </div>
+
+            <button type="submit" class="predict-button" id="predict-button" disabled>
+                <i class="fas fa-search"></i> Predict Disease
+            </button>
+        </form>
+
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert {% if message.tags %}{{ message.tags }}{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const predictButton = document.getElementById('predict-button');
+        const filePreview = document.getElementById('file-preview');
+
+        // Handle file preview
+        function showPreview(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                filePreview.innerHTML = `
+                    <img src="${e.target.result}" class="preview-image" alt="Preview">
+                `;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Handle drag and drop events
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        ['dragleave', 'dragend'].forEach(type => {
+            dropZone.addEventListener(type, () => {
+                dropZone.classList.remove('dragover');
+            });
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                predictButton.disabled = false;
+                showPreview(e.dataTransfer.files[0]);
+            }
+        });
+
+        // Handle file input change
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length) {
+                predictButton.disabled = false;
+                showPreview(fileInput.files[0]);
+            }
+        });
+
+        // Initialize button state
+        predictButton.disabled = true;
+    </script>
+</body>
+</html>

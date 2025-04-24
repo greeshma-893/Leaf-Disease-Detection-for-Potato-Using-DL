@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Prediction Results</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'detection/styles.css' %}">
+    <style>
+        .results-container {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 50px;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+            text-align: center;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .logout-button {
+            background: #dc3545;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+        .logout-button:hover {
+            background: #c82333;
+        }
+        .prediction-result {
+            margin: 30px auto;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #4CAF50;
+            max-width: 700px;
+            text-align: left;
+        }
+
+        .treatment-section {
+            margin: 40px auto;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            max-width: 700px;
+            text-align: left;
+        }
+        .treatment-section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 22px;
+            text-align: center;
+        }
+        .treatment-section h4 {
+            color: #4CAF50;
+            margin: 15px 0 10px;
+            font-size: 18px;
+        }
+        .treatment-section ul {
+            padding-left: 20px;
+        }
+        .treatment-section li {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="results-container">
+        <div class="header-container">
+            <h2>Prediction Results</h2>
+            <a href="{% url 'logout' %}" class="logout-button">Logout</a>
+        </div>
+
+        <div class="prediction-result">
+            <p><strong>Prediction:</strong> {{ prediction }}</p>
+            <p><strong>Confidence:</strong> {{ confidence }}</p>
+        </div>
+
+        {% if image_url %}
+        <div class="image-container">
+            <img src="{{ image_url }}" alt="Uploaded Image" style="max-width: 100%; border-radius: 8px;">
+        </div>
+        {% endif %}
+
+        <div class="treatment-section">
+            <h3>Treatment Suggestions</h3>
+            {% if prediction|lower == 'healthy' %}
+
+                <h4>Organic Prevention:</h4>
+                <ul>
+                    <li>Neem Oil Spray - Natural fungicide and pest repellent</li>
+                    <li>Garlic + Chili Extract - Antifungal & antibacterial properties</li>
+                    <li>Compost Tea Spray - Enhances soil microbiome</li>
+                </ul>
+
+                <h4>Chemical Prevention:</h4>
+                <ul>
+                    <li>Copper-Based Fungicides - Prevents fungal infections</li>
+                    <li>Sulfur Dust Spray - Protects against powdery mildew</li>
+                </ul>
+            {% elif prediction|lower == 'late blight' %}
+
+                <h4>Organic Treatment:</h4>
+                <ul>
+                    <li>Bordeaux Mixture - Traditional organic fungicide</li>
+                    <li>Potassium Bicarbonate Spray - Inhibits fungal growth</li>
+                </ul>
+
+                <h4>Chemical Treatment:</h4>
+                <ul>
+                    <li>Metalaxyl + Mancozeb - Systemic + contact fungicide</li>
+                    <li>Chlorothalonil - Prevents spore spread</li>
+                </ul>
+            {% elif prediction|lower == 'early blight' %}
+            {% else %}
+                <h4>Treatment Suggestions:</h4>
+                <p>Please consult with an agricultural expert for specific treatment recommendations.</p>
+
+                <h4>Organic Treatment:</h4>
+                <ul>
+                    <li>Baking Soda Spray - Disrupts fungal membranes</li>
+                    <li>Serenade (Bacillus subtilis) - Biological control</li>
+                </ul>
+
+                <h4>Chemical Treatment:</h4>
+                <ul>
+                    <li>Mancozeb - Broad-spectrum fungicide</li>
+                    <li>Azoxystrobin - Long-lasting protection</li>
+                </ul>
+            {% endif %}
+
+        </div>
+
+        <div class="navigation-buttons">
+            <a href="{% url 'upload_image' %}" class="btn" style="
+                background-color: #4CAF50;
+                color:white;
+                padding: 14px 28px;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+                transition: all 0.3s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+            ">
+                <i class="fas fa-upload"></i> Upload Another Image
+            </a>
+
+
+
+        </div>
+    </div>
+</body>
+</html>
