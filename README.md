@@ -6,7 +6,7 @@ This project is a deep learning-based web application for detecting diseases in 
 
 ## 🧠 Model
 
-- ✅ **Architecture**: MobileNet (with transfer learning)
+- ✅ **Architecture**: MobileNet 
 - 🖼️ **Image Size**: 224x224
 - 📁 **Dataset**: Custom dataset of healthy and diseased potato leaves (Early Blight, Late Blight)
 - 📦 **Frameworks**: TensorFlow, Keras
